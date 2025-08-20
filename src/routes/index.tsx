@@ -32,6 +32,10 @@ function App() {
     setTasks(tasks.map((task) => (task.id === id ? { ...task, status } : task)))
   }
 
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter((task) => task.id !== id))
+  }
+
   const toggleView = () => {
     taskFilter.includes('todo')
       ? setTaskFilter(['completed'])
@@ -45,6 +49,7 @@ function App() {
         filter={taskFilter}
         tasks={tasks}
         setTaskStatus={setTaskStatus}
+        deleteTask={deleteTask}
       />
       <input
         className="border-2 border-gray-300 rounded-md p-2"
@@ -86,10 +91,12 @@ const TaskView = ({
   filter,
   tasks,
   setTaskStatus,
+  deleteTask,
 }: {
   filter: Array<Status>
   tasks: Array<Task>
   setTaskStatus: (id: number, status: Status) => void
+  deleteTask: (id: number) => void
 }) => {
   return (
     <div className="flex flex-col gap-2">
@@ -109,6 +116,11 @@ const TaskView = ({
                     callback={() => setTaskStatus(task.id, 'todo')}
                     color="bg-red-500"
                     text="Incomplete"
+                  />
+                  <MyButton
+                    callback={() => deleteTask(task.id)}
+                    color="bg-red-500"
+                    text="Delete"
                   />
                 </div>
               ) : null}
