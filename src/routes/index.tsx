@@ -1,39 +1,121 @@
 import { createFileRoute } from '@tanstack/react-router'
-import logo from '../logo.svg'
+
+import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
   component: App,
 })
 
+type Status = 'todo' | 'completed'
+
+type Task = {
+  id: number
+  title: string
+  status: Status
+}
+
 function App() {
+  const [tasks, setTasks] = useState<Array<Task>>([])
+  const [taskFilter, setTaskFilter] = useState<Array<Status>>(['todo'])
+  const [inputValue, setInputValue] = useState<string>('')
+
+  const clearState = () => {
+    setTasks([])
+  }
+
+  const addTask = (title: string) => {
+    setTasks([...tasks, { id: tasks.length + 1, title: title, status: 'todo' }])
+    setInputValue('')
+  }
+
+  const setTaskStatus = (id: number, status: Status) => {
+    setTasks(tasks.map((task) => (task.id === id ? { ...task, status } : task)))
+  }
+
+  const toggleView = () => {
+    taskFilter.includes('todo')
+      ? setTaskFilter(['completed'])
+      : setTaskFilter(['todo'])
+  }
+
   return (
-    <div className="text-center">
-      <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
-        <img
-          src={logo}
-          className="h-[40vmin] pointer-events-none animate-[spin_20s_linear_infinite]"
-          alt="logo"
-        />
-        <p>
-          Edit <code>src/routes/index.tsx</code> and save to reload.
-        </p>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://tanstack.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn TanStack
-        </a>
-      </header>
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h1 className="text-6xl font-bold">Tasks</h1>
+      <TaskView
+        filter={taskFilter}
+        tasks={tasks}
+        setTaskStatus={setTaskStatus}
+      />
+      <input
+        className="border-2 border-gray-300 rounded-md p-2"
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+      <MyButton callback={clearState} color="bg-red-500" text="Clear" />
+      <MyButton
+        callback={() => addTask(inputValue)}
+        color="bg-blue-500"
+        text="Add"
+      />
+      <MyButton callback={toggleView} color="bg-green-500" text="Toggle" />
+    </div>
+  )
+}
+
+const MyButton = ({
+  callback,
+  color,
+  text,
+}: {
+  callback: () => void
+  color: string
+  text: string
+}) => {
+  return (
+    <button
+      className={`hover:cursor-auto outline-2 ${color}`}
+      onClick={callback}
+    >
+      {text}
+    </button>
+  )
+}
+
+const TaskView = ({
+  filter,
+  tasks,
+  setTaskStatus,
+}: {
+  filter: Array<Status>
+  tasks: Array<Task>
+  setTaskStatus: (id: number, status: Status) => void
+}) => {
+  return (
+    <div className="flex flex-col gap-2">
+      <ul>
+        {tasks.map((task) => {
+          return (
+            <li key={task.id}>
+              {filter.includes(task.status) ? (
+                <div className="flex flex-row gap-2">
+                  <p>{task.title}</p>
+                  <MyButton
+                    callback={() => setTaskStatus(task.id, 'completed')}
+                    color="bg-green-500"
+                    text="Complete"
+                  />
+                  <MyButton
+                    callback={() => setTaskStatus(task.id, 'todo')}
+                    color="bg-red-500"
+                    text="Incomplete"
+                  />
+                </div>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }
